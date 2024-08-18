@@ -2,13 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 class Budget {
-  String emoji;
-  String category;
-  double amount;
+  final String category;
+  final String emoji;
+  final double amount;
 
-  Budget({required this.emoji, required this.category, required this.amount});
+  Budget({required this.category, required this.emoji, required this.amount});
+
+  factory Budget.fromJson(Map<String, dynamic> json) {
+    return Budget(
+      category: json['category_name'],
+      emoji: json['emoji'],
+      amount: json['amount'].toDouble(),
+    );
+  }
 }
 
+// ignore: must_be_immutable
 class CreateGoalScreen extends StatefulWidget {
   final List<Budget> budgets;
   double amount;

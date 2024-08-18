@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:budget_lock/screens/create_Budget.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +23,57 @@ class _HomeScreenState extends State<HomeScreen>
     setState(() {
       _balance += amount; // Update balance
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchBudgets();
+  }
+
+  Future<void> _addBudget(Budget budget) async {
+    final response = await http.post(
+      Uri.parse('http://localhost/budgets/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'category_name': budget.category,
+        'amount': budget.amount,
+        'emoji': budget.emoji,
+        'deadline': DateTime.now().toIso8601String(),
+        'reminder': DateTime.now().toIso8601String(),
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      _fetchBudgets();
+    } else {
+      throw Exception('Failed to add budget');
+    }
+  }
+
+  Future<void> _fetchBudgets() async {
+    final response = await http.get(Uri.parse('http://localhost/budgets/'));
+    if (response.statusCode == 200) {
+      final List<dynamic> budgetsJson = json.decode(response.body);
+      setState(() {
+        _budgets = budgetsJson.map((json) => Budget.fromJson(json)).toList();
+      });
+    } else {
+      throw Exception('Failed to load budgets');
+    }
+  }
+
+  Future<void> _deleteBudget(String category) async {
+    final response =
+        await http.delete(Uri.parse('http://localhost/budgets/$category'));
+
+    if (response.statusCode == 200) {
+      _fetchBudgets();
+    } else {
+      throw Exception('Failed to delete budget');
+    }
   }
 
   Widget _buildServiceItem(IconData icon, String label, Color color) {
@@ -48,6 +102,9 @@ class _HomeScreenState extends State<HomeScreen>
         // Handle category click
         print('Clicked on ${budget.category}');
         // You can add navigation or show a dialog here
+      },
+      onLongPress: () {
+        _deleteBudget(budget.category);
       },
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 10),
@@ -258,6 +315,7 @@ class _HomeScreenState extends State<HomeScreen>
                           _updateBalance(result -
                               _balance); // Update the balance with the new value
                         }
+                        _addBudget(_budgets[_budgets.length - 1]);
                       },
                       child: Text('Add More Categories'),
                       style: ElevatedButton.styleFrom(

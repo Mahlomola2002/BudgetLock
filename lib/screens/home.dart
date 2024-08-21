@@ -349,17 +349,15 @@ class _HomeScreenState extends State<HomeScreen>
                             ),
                           );
 
-                          if (result != null && result is double) {
-                            _updateBalance(result -
-                                _balance); // Update the balance with the new value
-                          }
-                          _addBudget(_budgets[_budgets.length - 1]);
-                        },
-                        child: Text('Add More Categories'),
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: Colors.blue,
-                        ),
+                        if (result != null && result is double) {
+                          _updateBalance(result -
+                              _balance); // Update the balance with the new value
+                        }
+                        _addBudget(_budgets[_budgets.length - 1]);
+                      },
+                      child: Text('Add More Categories'),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white, backgroundColor: Colors.blue,
                       ),
                     ],
                   ),

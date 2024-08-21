@@ -144,7 +144,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
           ElevatedButton(
             onPressed: () => _handleSubmitted(_textController.text),
             style: ElevatedButton.styleFrom(
-              primary: Colors.purpleAccent, // Updated color to match the theme
+              backgroundColor: Colors.purpleAccent, // Updated color to match the theme
               shape: CircleBorder(),
               padding: EdgeInsets.all(12.0),
             ),

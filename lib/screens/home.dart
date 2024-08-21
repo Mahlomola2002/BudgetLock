@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'dart:convert';
 
 import 'package:budget_lock/screens/create_Budget.dart';
@@ -28,12 +30,14 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
+    print("ddd");
     _fetchBudgets();
+    print("i'm here");
   }
 
   Future<void> _addBudget(Budget budget) async {
     final response = await http.post(
-      Uri.parse('http://localhost/budgets/'),
+      Uri.parse('http://localhost:8000/budgets/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -54,20 +58,25 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _fetchBudgets() async {
-    final response = await http.get(Uri.parse('http://localhost/budgets/'));
+    final response =
+        await http.get(Uri.parse('http://localhost:8000/budgets/'));
     if (response.statusCode == 200) {
       final List<dynamic> budgetsJson = json.decode(response.body);
       setState(() {
         _budgets = budgetsJson.map((json) => Budget.fromJson(json)).toList();
       });
+      print(_budgets);
+      print("lol");
     } else {
+      print("hhf");
       throw Exception('Failed to load budgets');
     }
+    print("zulu");
   }
 
   Future<void> _deleteBudget(String category) async {
     final response =
-        await http.delete(Uri.parse('http://localhost/budgets/$category'));
+        await http.delete(Uri.parse('http://localhost:8000/budgets/$category'));
 
     if (response.statusCode == 200) {
       _fetchBudgets();
@@ -140,9 +149,9 @@ class _HomeScreenState extends State<HomeScreen>
     super.build(
         context); // Necessary to call super.build() when using AutomaticKeepAliveClientMixin
     return Scaffold(
-      backgroundColor: Colors.blueAccent,
+      backgroundColor: const Color.fromARGB(255, 241, 243, 245),
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color.fromARGB(255, 84, 119, 84),
         title: Text(
           'BudgetLock',
           style: TextStyle(fontSize: 24, color: Colors.white),
@@ -191,9 +200,10 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       body: SingleChildScrollView(
         child: Container(
+          height: MediaQuery.of(context).size.height,
           decoration: BoxDecoration(
             color: Color.fromARGB(
-                255, 240, 247, 239), // Set the background color to black
+                255, 6, 243, 65), // Set the background color to black
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(10.0),
               topRight: Radius.circular(10.0),
@@ -247,83 +257,112 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ),
               ),
-              SizedBox(height: 15),
+              SizedBox(height: 20),
               // Services Component
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Services',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildServiceItem(
-                            Icons.compare_arrows, 'Transfer', Colors.green),
-                        _buildServiceItem(Icons.add, 'Deposit', Colors.pink),
-                        _buildServiceItem(
-                            Icons.payment, 'Make Payment', Colors.purple),
-                        _buildServiceItem(
-                            Icons.lightbulb_outline, 'Pay Bill', Colors.orange),
-                      ],
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white, // Background color
+                  borderRadius: BorderRadius.circular(10), // Rounded corners
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1), // Shadow color
+                      spreadRadius: 2, // Spread radius
+                      blurRadius: 5, // Blur radius
+                      offset: Offset(0, 3), // Shadow position
                     ),
                   ],
                 ),
-              ),
-              SizedBox(height: 15),
-              // Budget Component
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Budget',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Services',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    ..._budgets
-                        .map((budget) => _buildClickableTransactionItem(budget))
-                        .toList(),
-                    SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CreateGoalScreen(
-                                budgets: _budgets, amount: _balance),
-                          ),
-                        );
-
-                        if (result != null && result is double) {
-                          _updateBalance(result -
-                              _balance); // Update the balance with the new value
-                        }
-                        _addBudget(_budgets[_budgets.length - 1]);
-                      },
-                      child: Text('Add More Categories'),
-                      style: ElevatedButton.styleFrom(
-                        primary: Colors.blue,
-                        onPrimary: Colors.white,
                       ),
+                      SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildServiceItem(
+                              Icons.compare_arrows, 'Transfer', Colors.green),
+                          _buildServiceItem(Icons.add, 'Deposit', Colors.pink),
+                          _buildServiceItem(
+                              Icons.payment, 'Make Payment', Colors.purple),
+                          _buildServiceItem(Icons.lightbulb_outline, 'Pay Bill',
+                              Colors.orange),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 60),
+              // Budget Component
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white, // Background color
+                  borderRadius: BorderRadius.circular(10), // Rounded corners
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1), // Shadow color
+                      spreadRadius: 2, // Spread radius
+                      blurRadius: 5, // Blur radius
+                      offset: Offset(0, 3), // Shadow position
                     ),
                   ],
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Budget',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10),
+                      ..._budgets
+                          .map((budget) =>
+                              _buildClickableTransactionItem(budget))
+                          .toList(),
+                      SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CreateGoalScreen(
+                                  budgets: _budgets, amount: _balance),
+                            ),
+                          );
+
+                          if (result != null && result is double) {
+                            _updateBalance(result -
+                                _balance); // Update the balance with the new value
+                          }
+                          _addBudget(_budgets[_budgets.length - 1]);
+                        },
+                        child: Text('Add More Categories'),
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               SizedBox(height: 20),

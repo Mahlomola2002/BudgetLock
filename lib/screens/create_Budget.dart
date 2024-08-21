@@ -104,7 +104,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
               child: ElevatedButton(
                 child: Text('Create'),
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.blue,
+                  backgroundColor: Colors.blue,
                   padding: EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () {

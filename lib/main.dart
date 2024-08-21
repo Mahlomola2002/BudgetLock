@@ -1,10 +1,14 @@
 // ignore_for_file: prefer_const_constructors, use_key_in_widget_constructors, prefer_const_literals_to_create_immutables
 
+import 'dart:ui';
+
 import 'package:budget_lock/screens/chatbot.dart';
 import 'package:flutter/material.dart';
 import 'screens/home.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(MyApp());
 }
 

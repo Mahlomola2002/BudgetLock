@@ -1,8 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-
-
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -73,10 +71,11 @@ class _LoginScreenState extends State<LoginScreen> {
           children: <Widget>[
             // Logo at the top
             Image.asset(
-              'assets/logo.jpeg', // Replace with your logo asset path
-              height: 100,
+              'logo.jpeg', // Replace with your logo asset path
+              height: 250,
+              width: 250,
             ),
-            SizedBox(height: 40),
+            SizedBox(height: 100),
 
             // Email field
             TextField(

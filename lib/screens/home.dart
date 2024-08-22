@@ -1,7 +1,8 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, prefer_final_fields, library_private_types_in_public_api, unused_element, prefer_const_literals_to_create_immutables
 
 import 'dart:convert';
 
+import 'package:budget_lock/screens/Payment.dart';
 import 'package:budget_lock/screens/create_Budget.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -17,6 +18,7 @@ class _HomeScreenState extends State<HomeScreen>
     with AutomaticKeepAliveClientMixin {
   double _balance = 1000.00; // Initial balance
   List<Budget> _budgets = [];
+  bool _isFetchingBudgets = false;
 
   @override
   bool get wantKeepAlive => true; // Ensures the state is kept alive
@@ -30,48 +32,55 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
-    print("ddd");
+
     _fetchBudgets();
-    print("i'm here");
   }
 
   Future<void> _addBudget(Budget budget) async {
-    final response = await http.post(
-      Uri.parse('http://localhost:8000/budgets/'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, dynamic>{
-        'category_name': budget.category,
-        'amount': budget.amount,
-        'emoji': budget.emoji,
-        'deadline': DateTime.now().toIso8601String(),
-        'reminder': DateTime.now().toIso8601String(),
-      }),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:8000/budgets/'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'category_name': budget.category,
+          'amount': budget.amount,
+          'emoji': budget.emoji,
+          'deadline': DateTime.now().toIso8601String(),
+          'reminder': DateTime.now().toIso8601String(),
+        }),
+      );
 
-    if (response.statusCode == 200) {
-      _fetchBudgets();
-    } else {
-      throw Exception('Failed to add budget');
+      if (response.statusCode == 200) {
+        // Fetch the updated budgets after adding a new one
+        await _fetchBudgets();
+      } else {
+        throw Exception('Failed to add budget');
+      }
+    } catch (e) {
+      print('Error adding budget: $e');
     }
   }
 
   Future<void> _fetchBudgets() async {
-    final response =
-        await http.get(Uri.parse('http://localhost:8000/budgets/'));
-    if (response.statusCode == 200) {
-      final List<dynamic> budgetsJson = json.decode(response.body);
-      setState(() {
-        _budgets = budgetsJson.map((json) => Budget.fromJson(json)).toList();
-      });
-      print(_budgets);
-      print("lol");
-    } else {
-      print("hhf");
-      throw Exception('Failed to load budgets');
+    try {
+      _isFetchingBudgets = true;
+      final response =
+          await http.get(Uri.parse('http://localhost:8000/budgets/'));
+      if (response.statusCode == 200) {
+        final List<dynamic> budgetsJson = json.decode(response.body);
+        setState(() {
+          _budgets = budgetsJson.map((json) => Budget.fromJson(json)).toList();
+        });
+      } else {
+        throw Exception('Failed to load budgets');
+      }
+    } catch (e) {
+      print('Error fetching budgets: $e');
+    } finally {
+      _isFetchingBudgets = false;
     }
-    print("zulu");
   }
 
   Future<void> _deleteBudget(String category) async {
@@ -109,7 +118,12 @@ class _HomeScreenState extends State<HomeScreen>
     return GestureDetector(
       onTap: () {
         // Handle category click
-        print('Clicked on ${budget.category}');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PaymentMethodsPage(),
+          ),
+        );
         // You can add navigation or show a dialog here
       },
       onLongPress: () {
@@ -134,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen>
               'R${budget.amount.toStringAsFixed(2)}',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.green,
+                color: const Color.fromARGB(255, 55, 73, 56),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -149,9 +163,9 @@ class _HomeScreenState extends State<HomeScreen>
     super.build(
         context); // Necessary to call super.build() when using AutomaticKeepAliveClientMixin
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 241, 243, 245),
+      backgroundColor: const Color.fromARGB(255, 16, 82, 3),
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 84, 119, 84),
+        backgroundColor: const Color.fromARGB(255, 3, 66, 3),
         title: Text(
           'BudgetLock',
           style: TextStyle(fontSize: 24, color: Colors.white),
@@ -169,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen>
               child: Text(
                 'Menu',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: const Color.fromARGB(216, 37, 37, 37),
                   fontSize: 24,
                 ),
               ),
@@ -202,12 +216,9 @@ class _HomeScreenState extends State<HomeScreen>
         child: Container(
           height: MediaQuery.of(context).size.height,
           decoration: BoxDecoration(
-            color: Color.fromARGB(
-                255, 6, 243, 65), // Set the background color to black
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(10.0),
-              topRight: Radius.circular(10.0),
-            ),
+            color: const Color.fromARGB(
+                255, 3, 44, 19), // Set the background color to black
+
             boxShadow: [
               BoxShadow(
                 color: Colors.black26,
@@ -230,9 +241,9 @@ class _HomeScreenState extends State<HomeScreen>
                     borderRadius: BorderRadius.circular(30.0),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 10.0,
-                        spreadRadius: 2.0,
+                        color: const Color.fromARGB(66, 248, 253, 252),
+                        blurRadius: 20.0,
+                        spreadRadius: 5.0,
                         offset: Offset(5.0, 5.0),
                       ),
                     ],
@@ -261,14 +272,14 @@ class _HomeScreenState extends State<HomeScreen>
               // Services Component
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white, // Background color
-                  borderRadius: BorderRadius.circular(10), // Rounded corners
+                  color: const Color.fromARGB(255, 227, 238, 227),
+                  borderRadius: BorderRadius.circular(30.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1), // Shadow color
-                      spreadRadius: 2, // Spread radius
-                      blurRadius: 5, // Blur radius
-                      offset: Offset(0, 3), // Shadow position
+                      color: const Color.fromARGB(66, 248, 253, 252),
+                      blurRadius: 20.0,
+                      spreadRadius: 5.0,
+                      offset: Offset(5.0, 5.0),
                     ),
                   ],
                 ),
@@ -305,14 +316,14 @@ class _HomeScreenState extends State<HomeScreen>
               // Budget Component
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white, // Background color
-                  borderRadius: BorderRadius.circular(10), // Rounded corners
+                  color: const Color.fromARGB(255, 227, 238, 227),
+                  borderRadius: BorderRadius.circular(30.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1), // Shadow color
-                      spreadRadius: 2, // Spread radius
-                      blurRadius: 5, // Blur radius
-                      offset: Offset(0, 3), // Shadow position
+                      color: const Color.fromARGB(66, 248, 253, 252),
+                      blurRadius: 20.0,
+                      spreadRadius: 5.0,
+                      offset: Offset(5.0, 5.0),
                     ),
                   ],
                 ),
@@ -349,16 +360,19 @@ class _HomeScreenState extends State<HomeScreen>
                             ),
                           );
 
-                        if (result != null && result is double) {
-                          _updateBalance(result -
-                              _balance); // Update the balance with the new value
-                        }
-                        _addBudget(_budgets[_budgets.length - 1]);
-                      },
-                      child: Text('Add More Categories'),
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white, backgroundColor: Colors.blue,
-                      ),
+                          if (result != null && result is double) {
+                            _updateBalance(result -
+                                _balance); // Update the balance with the new value
+                          }
+                          //_addBudget(_budgets[_budgets.length - 1]);
+                        },
+                        child: Text('Add More Categories'),
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor:
+                              const Color.fromARGB(255, 5, 133, 54),
+                        ),
+                      )
                     ],
                   ),
                 ),

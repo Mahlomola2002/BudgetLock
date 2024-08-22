@@ -1,17 +1,17 @@
-// ignore_for_file: prefer_const_constructors, use_key_in_widget_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'dart:ui';
-
+import 'package:budget_lock/screens/Reports.dart';
 import 'package:budget_lock/screens/chatbot.dart';
 import 'package:budget_lock/screens/emailverification.dart';
 import 'package:budget_lock/screens/login_screen.dart';
 import 'package:budget_lock/screens/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'screens/home.dart';
-// ignore_for_file: prefer_const_constructors, use_key_in_widget_constructors, prefer_const_literals_to_create_immutables
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:flutter/material.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,19 +43,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  int _currentIndex = 0;
-  final List<Widget> _children = [
-    HomeScreen(),
-    DashboardScreen(),
-    ChatBotScreen(),
-  ];
-
-  void onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -84,7 +71,7 @@ class _HomeWrapperState extends State<HomeWrapper> {
   int _currentIndex = 0;
   final List<Widget> _children = [
     HomeScreen(),
-    DashboardScreen(),
+    ReportsPage(),
     ChatBotScreen(),
   ];
 
@@ -97,39 +84,61 @@ class _HomeWrapperState extends State<HomeWrapper> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(0, 30, 215, 96),
       body: IndexedStack(
         index: _currentIndex,
         children: _children,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        onTap: onTabTapped,
-        currentIndex: _currentIndex,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home, size: 24.0),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard, size: 32.0), // Larger size
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat, size: 24.0),
-            label: 'ChatBot',
-          ),
-        ],
-      ),
-    );
-  }
-}
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(
+              255, 3, 44, 19), // Fully transparent background
+          borderRadius: BorderRadius.circular(50.0),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 10.0,
+              spreadRadius: 2.0,
+              offset: Offset(5.0, 5.0),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20.0),
+          child: GNav(
+            backgroundColor: const Color.fromARGB(
+                255, 3, 44, 19), // Set the GNav background to transparent
+            rippleColor: Colors.white, // tab button ripple color when pressed
+            hoverColor: Colors.white, // tab button hover color
+            haptic: true, // haptic feedback
+            tabBorderRadius: 15,
 
-class DashboardScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Dashboard Screen',
-        style: TextStyle(fontSize: 24),
+            curve: Curves.easeOutExpo, // tab animation curves
+            duration: Duration(milliseconds: 300), // tab animation duration
+            gap: 8, // the tab button gap between icon and text
+            color: Colors.white70, // unselected icon color
+            activeColor: Colors.white, // selected icon and text color
+            iconSize: 24, // tab button icon size
+            tabBackgroundColor:
+                Colors.white.withOpacity(0.1), // selected tab background color
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            onTabChange:
+                onTabTapped, // Call the function to update _currentIndex
+            tabs: [
+              GButton(
+                icon: Icons.home_filled,
+                text: "Home",
+              ),
+              GButton(
+                icon: Icons.dashboard,
+                text: "Dashboard",
+              ),
+              GButton(
+                icon: Icons.chat_bubble,
+                text: "Chatbot",
+              )
+            ],
+          ),
+        ),
       ),
     );
   }

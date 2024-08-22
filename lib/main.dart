@@ -92,7 +92,7 @@ class _HomeWrapperState extends State<HomeWrapper> {
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: const Color.fromARGB(
-              255, 3, 44, 19), // Fully transparent background
+              255, 57, 58, 58), // Fully transparent background
           borderRadius: BorderRadius.circular(50.0),
           boxShadow: [
             BoxShadow(
@@ -106,7 +106,7 @@ class _HomeWrapperState extends State<HomeWrapper> {
           padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20.0),
           child: GNav(
             backgroundColor: const Color.fromARGB(
-                255, 3, 44, 19), // Set the GNav background to transparent
+                255, 57, 58, 58), // Set the GNav background to transparent
             rippleColor: Colors.white, // tab button ripple color when pressed
             hoverColor: Colors.white, // tab button hover color
             haptic: true, // haptic feedback

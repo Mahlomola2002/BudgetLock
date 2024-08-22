@@ -18,17 +18,14 @@ class _ReportsPageState extends State<ReportsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Reports'),
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Reports'),
+            Text('Reports 2'),
             SizedBox(height: 16.0),
-            Expanded(
+            Container(
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

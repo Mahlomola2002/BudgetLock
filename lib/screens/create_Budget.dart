@@ -1,21 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-
-class Budget {
-  final String category;
-  final String emoji;
-  final double amount;
-
-  Budget({required this.category, required this.emoji, required this.amount});
-
-  factory Budget.fromJson(Map<String, dynamic> json) {
-    return Budget(
-      category: json['category_name'],
-      emoji: json['emoji'],
-      amount: json['amount'].toDouble(),
-    );
-  }
-}
+import 'package:budget_lock/screens/budget_model.dart';
 
 // ignore: must_be_immutable
 class CreateGoalScreen extends StatefulWidget {
@@ -36,14 +21,15 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Set background color to black
+      backgroundColor:
+          Color.fromARGB(255, 43, 41, 41), // Set background color to black
       appBar: AppBar(
-        title: Text('Create Goal'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        backgroundColor: Colors.black, // Set AppBar background color to black
+        backgroundColor: Color.fromARGB(
+            255, 43, 41, 41), // Set AppBar background color to black
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),

@@ -1,9 +1,7 @@
-// ignore_for_file: prefer_const_constructors, prefer_final_fields, library_private_types_in_public_api, unused_element, prefer_const_literals_to_create_immutables
-
 import 'dart:convert';
-
 import 'package:budget_lock/screens/Payment.dart';
 import 'package:budget_lock/screens/create_Budget.dart';
+import 'package:budget_lock/screens/budget_model.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -18,54 +16,38 @@ class _HomeScreenState extends State<HomeScreen>
     with AutomaticKeepAliveClientMixin {
   double _balance = 1000.00; // Initial balance
   List<Budget> _budgets = [];
-  bool _isFetchingBudgets = false;
+  bool _isLoading = true;
+  ScrollController _scrollController = ScrollController();
+  double _profileIconPosition = 17.0;
 
   @override
   bool get wantKeepAlive => true; // Ensures the state is kept alive
 
-  void _updateBalance(double amount) {
-    setState(() {
-      _balance += amount; // Update balance
-    });
-  }
-
   @override
   void initState() {
     super.initState();
-
     _fetchBudgets();
+    _scrollController.addListener(_updateProfileIconPosition);
   }
 
-  Future<void> _addBudget(Budget budget) async {
-    try {
-      final response = await http.post(
-        Uri.parse('http://localhost:8000/budgets/'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, dynamic>{
-          'category_name': budget.category,
-          'amount': budget.amount,
-          'emoji': budget.emoji,
-          'deadline': DateTime.now().toIso8601String(),
-          'reminder': DateTime.now().toIso8601String(),
-        }),
-      );
+  @override
+  void dispose() {
+    _scrollController.removeListener(_updateProfileIconPosition);
+    _scrollController.dispose();
+    super.dispose();
+  }
 
-      if (response.statusCode == 200) {
-        // Fetch the updated budgets after adding a new one
-        await _fetchBudgets();
-      } else {
-        throw Exception('Failed to add budget');
-      }
-    } catch (e) {
-      print('Error adding budget: $e');
-    }
+  void _updateProfileIconPosition() {
+    setState(() {
+      _profileIconPosition = 17.0 + _scrollController.offset;
+    });
   }
 
   Future<void> _fetchBudgets() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
-      _isFetchingBudgets = true;
       final response =
           await http.get(Uri.parse('http://localhost:8000/budgets/'));
       if (response.statusCode == 200) {
@@ -79,7 +61,9 @@ class _HomeScreenState extends State<HomeScreen>
     } catch (e) {
       print('Error fetching budgets: $e');
     } finally {
-      _isFetchingBudgets = false;
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -100,15 +84,27 @@ class _HomeScreenState extends State<HomeScreen>
         Container(
           padding: EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
+            color: color.withOpacity(0.8),
             borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.5),
+                spreadRadius: 2,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
-          child: Icon(icon, color: color, size: 24),
+          child: Icon(icon, color: Colors.white, size: 28),
         ),
         SizedBox(height: 8),
         Text(
           label,
-          style: TextStyle(fontSize: 12),
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ],
     );
@@ -117,14 +113,12 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _buildClickableTransactionItem(Budget budget) {
     return GestureDetector(
       onTap: () {
-        // Handle category click
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => PaymentMethodsPage(),
           ),
         );
-        // You can add navigation or show a dialog here
       },
       onLongPress: () {
         _deleteBudget(budget.category);
@@ -160,228 +154,265 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    super.build(
-        context); // Necessary to call super.build() when using AutomaticKeepAliveClientMixin
+    super.build(context);
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 16, 82, 3),
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 3, 66, 3),
-        title: Text(
-          'BudgetLock',
-          style: TextStyle(fontSize: 24, color: Colors.white),
-        ),
-      ),
-      drawer: Drawer(
-        backgroundColor: Colors.white,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
+      backgroundColor: Color.fromARGB(255, 43, 41, 41),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            controller: _scrollController,
+            child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
-              ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: const Color.fromARGB(216, 37, 37, 37),
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.person),
-              title: Text('Profile'),
-              onTap: () {
-                // Navigate to ProfileScreen
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings'),
-              onTap: () {
-                // Navigate to SettingsScreen
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Sign Out'),
-              onTap: () {
-                // Handle sign out action
-              },
-            ),
-          ],
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(
-                255, 3, 44, 19), // Set the background color to black
-
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 20.0,
-                spreadRadius: 10.0,
-                offset: Offset(5.0, 5.0),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              SizedBox(height: 15),
-              // Available Balance Container
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Container(
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 227, 238, 227),
-                    borderRadius: BorderRadius.circular(30.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color.fromARGB(66, 248, 253, 252),
-                        blurRadius: 20.0,
-                        spreadRadius: 5.0,
-                        offset: Offset(5.0, 5.0),
-                      ),
-                    ],
+                color: const Color.fromARGB(255, 43, 41, 41),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 20.0,
+                    spreadRadius: 10.0,
+                    offset: Offset(5.0, 5.0),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Available Balance: ',
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 15,
-                          )),
-                      Text(
-                        'R${_balance.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
               ),
-              SizedBox(height: 20),
-              // Services Component
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 227, 238, 227),
-                  borderRadius: BorderRadius.circular(30.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color.fromARGB(66, 248, 253, 252),
-                      blurRadius: 20.0,
-                      spreadRadius: 5.0,
-                      offset: Offset(5.0, 5.0),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Services',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildServiceItem(
-                              Icons.compare_arrows, 'Transfer', Colors.green),
-                          _buildServiceItem(Icons.add, 'Deposit', Colors.pink),
-                          _buildServiceItem(
-                              Icons.payment, 'Make Payment', Colors.purple),
-                          _buildServiceItem(Icons.lightbulb_outline, 'Pay Bill',
-                              Colors.orange),
+              child: Column(
+                children: [
+                  SizedBox(
+                      height: 100), // Increased top padding for profile icon
+                  // Available Balance Container
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 227, 238, 227),
+                        borderRadius: BorderRadius.circular(30.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color.fromARGB(66, 248, 253, 252),
+                            blurRadius: 20.0,
+                            spreadRadius: 5.0,
+                            offset: Offset(5.0, 5.0),
+                          ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 60),
-              // Budget Component
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 227, 238, 227),
-                  borderRadius: BorderRadius.circular(30.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color.fromARGB(66, 248, 253, 252),
-                      blurRadius: 20.0,
-                      spreadRadius: 5.0,
-                      offset: Offset(5.0, 5.0),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          Text('Available Balance: ',
+                              style:
+                                  TextStyle(color: Colors.blue, fontSize: 15)),
                           Text(
-                            'Budget',
+                            'R${_balance.toStringAsFixed(2)}',
                             style: TextStyle(
+                              color: Colors.black,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 10),
-                      ..._budgets
-                          .map((budget) =>
-                              _buildClickableTransactionItem(budget))
-                          .toList(),
-                      SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CreateGoalScreen(
-                                  budgets: _budgets, amount: _balance),
-                            ),
-                          );
-
-                          if (result != null && result is double) {
-                            _updateBalance(result -
-                                _balance); // Update the balance with the new value
-                          }
-                          //_addBudget(_budgets[_budgets.length - 1]);
-                        },
-                        child: Text('Add More Categories'),
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor:
-                              const Color.fromARGB(255, 5, 133, 54),
-                        ),
-                      )
-                    ],
+                    ),
                   ),
+                  SizedBox(height: 20),
+                  // Services Text (Outside Container)
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Services',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Services Component
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 124, 180, 124),
+                        borderRadius: BorderRadius.circular(30.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color.fromARGB(66, 248, 253, 252),
+                            blurRadius: 20.0,
+                            spreadRadius: 5.0,
+                            offset: Offset(5.0, 5.0),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildServiceItem(
+                                Icons.compare_arrows, 'Transfer', Colors.green),
+                            _buildServiceItem(
+                                Icons.add, 'Deposit', Colors.pink),
+                            _buildServiceItem(
+                                Icons.payment, 'Make Payment', Colors.purple),
+                            _buildServiceItem(Icons.lightbulb_outline,
+                                'Pay Bill', Colors.orange),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  // Budget Text (Outside Container)
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Budget',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Budget Component
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 227, 238, 227),
+                        borderRadius: BorderRadius.circular(30.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color.fromARGB(66, 248, 253, 252),
+                            blurRadius: 20.0,
+                            spreadRadius: 5.0,
+                            offset: Offset(5.0, 5.0),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 10),
+                            ..._budgets
+                                .map((budget) =>
+                                    _buildClickableTransactionItem(budget))
+                                .toList(),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CreateGoalScreen(
+                              budgets: _budgets,
+                              amount: _balance,
+                            ),
+                          ),
+                        );
+
+                        if (result != null && result is double) {
+                          _updateBalance(result);
+                        }
+                      },
+                      child: Text('Add More Categories'),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 32, vertical: 16),
+                        textStyle: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+          // Profile Icon Sticky at the Top
+          Positioned(
+            top: _profileIconPosition,
+            left: 17,
+            child: GestureDetector(
+              onTap: () {
+                // Handle profile icon tap
+                // You can show a modal bottom sheet or navigate to a profile page
+                showModalBottomSheet(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return Container(
+                      child: Wrap(
+                        children: <Widget>[
+                          ListTile(
+                            leading: Icon(Icons.person),
+                            title: Text('Profile'),
+                            onTap: () {
+                              // Navigate to ProfileScreen
+                              Navigator.pop(context);
+                            },
+                          ),
+                          ListTile(
+                            leading: Icon(Icons.settings),
+                            title: Text('Settings'),
+                            onTap: () {
+                              // Navigate to SettingsScreen
+                              Navigator.pop(context);
+                            },
+                          ),
+                          ListTile(
+                            leading: Icon(Icons.logout),
+                            title: Text('Sign Out'),
+                            onTap: () {
+                              // Handle sign out action
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+              child: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.person,
+                  color: Colors.black,
+                  size: 30,
                 ),
               ),
-              SizedBox(height: 20),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
+  }
+
+  void _updateBalance(double newBalance) {
+    setState(() {
+      _balance = newBalance;
+    });
   }
 }

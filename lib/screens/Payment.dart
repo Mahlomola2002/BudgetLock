@@ -1,6 +1,15 @@
+import 'dart:convert';
+
+import 'package:budget_lock/screens/budget_model.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class PaymentMethodsPage extends StatefulWidget {
+  Budget budget;
+  final Function(Budget) onBudgetUpdated;
+
+  PaymentMethodsPage({required this.budget, required this.onBudgetUpdated});
+
   @override
   _PaymentMethodsPageState createState() => _PaymentMethodsPageState();
 }
@@ -11,6 +20,58 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage> {
   String affiliationNumber = '';
   String amountToPay = '';
   String paymentType = 'Card'; // Default payment type
+
+  void _handlePayment() async {
+    double? amountToPayValue = double.tryParse(amountToPay);
+    if (amountToPayValue != null) {
+      if (amountToPayValue <= widget.budget.amount) {
+        setState(() {
+          widget.budget.amount -= amountToPayValue;
+        });
+        widget.onBudgetUpdated(widget.budget);
+
+        // Record the transaction
+        final response = await http.post(
+          Uri.parse('http://localhost:8020/transactions/'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(<String, dynamic>{
+            'category_name': widget.budget.category,
+            'amount': amountToPayValue,
+            'email': email,
+            'customer_name': name,
+            'affiliation_number': affiliationNumber,
+            'payment_type': paymentType,
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                'Payment Successful! Remaining balance: \R${widget.budget.amount}'),
+            backgroundColor: Colors.green,
+          ));
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Error recording transaction. Please try again.'),
+            backgroundColor: Colors.red,
+          ));
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Error: Amount to pay exceeds available budget.'),
+          backgroundColor: Colors.red,
+        ));
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Error: Please enter a valid amount to pay.'),
+        backgroundColor: Colors.red,
+      ));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -193,10 +254,7 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage> {
                     SizedBox(width: 16.0),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Handle pay button press
-                          // You can add your payment processing logic here
-                        },
+                        onPressed: _handlePayment,
                         child: Text('Pay'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,

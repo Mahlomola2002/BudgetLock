@@ -63,106 +63,107 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            // Logo at the top
-            Image.asset(
-              'logo.jpeg', // Replace with your logo asset path
-              height: 250,
-              width: 250,
-            ),
-            SizedBox(height: 100),
-
-            // Email field
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                hintText: 'Email',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+        backgroundColor: Colors.black,
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                // Logo at the top
+                Image.asset(
+                  'logo.jpeg', // Replace with your logo asset path
+                  height: 250,
+                  width: 250,
                 ),
-              ),
-              keyboardType: TextInputType.emailAddress,
-              style: TextStyle(color: Colors.black),
-            ),
-            SizedBox(height: 20),
+                SizedBox(height: 100),
 
-            // Password field
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                hintText: 'Password',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+                // Email field
+                TextField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: 'Email',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  style: TextStyle(color: Colors.black),
                 ),
-              ),
-              obscureText: true,
-              style: TextStyle(color: Colors.black),
-            ),
-            SizedBox(height: 20),
+                SizedBox(height: 20),
 
-            // Sign In button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green, // Button color
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+                // Password field
+                TextField(
+                  controller: _passwordController,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: 'Password',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  obscureText: true,
+                  style: TextStyle(color: Colors.black),
+                ),
+                SizedBox(height: 20),
+
+                // Sign In button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green, // Button color
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    onPressed: _login,
+                    child: Text(
+                      'Sign in',
+                      style: TextStyle(fontSize: 16),
+                    ),
                   ),
                 ),
-                onPressed: _login,
-                child: Text(
-                  'Sign in',
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-            ),
-            SizedBox(height: 16.0),
+                SizedBox(height: 16.0),
 
-            // Error message display
-            if (_errorMessage.isNotEmpty) ...[
-              SizedBox(height: 16.0),
-              Text(
-                _errorMessage,
-                style: TextStyle(color: Colors.red),
-              ),
-            ],
+                // Error message display
+                if (_errorMessage.isNotEmpty) ...[
+                  SizedBox(height: 16.0),
+                  Text(
+                    _errorMessage,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ],
 
-            // Forgot password and Sign up links
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton(
-                  onPressed: _resetPassword,
-                  child: Text(
-                    'Forgot password',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pushNamed('/sign-up');
-                  },
-                  child: Text(
-                    'Sign up',
-                    style: TextStyle(color: Colors.green),
-                  ),
+                // Forgot password and Sign up links
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: _resetPassword,
+                      child: Text(
+                        'Forgot password',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pushNamed('/sign-up');
+                      },
+                      child: Text(
+                        'Sign up',
+                        style: TextStyle(color: Colors.green),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 }

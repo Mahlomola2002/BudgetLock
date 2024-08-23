@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:budget_lock/screens/budget_model.dart';
+import 'package:http/http.dart' as http;
 
 // ignore: must_be_immutable
 class CreateGoalScreen extends StatefulWidget {
@@ -17,6 +20,29 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
   final TextEditingController _goalNameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   String _selectedEmoji = '🎯'; // Default emoji
+
+  Future<void> createBudget(Budget budget) async {
+    final url = Uri.parse('http://localhost:8020/budgets/');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(budget.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        print('Budget created successfully');
+      } else {
+        print('Failed to create budget. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
+    } catch (e) {
+      print('Error creating budget: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +158,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                   backgroundColor: Colors.blue,
                   padding: EdgeInsets.symmetric(vertical: 16),
                 ),
-                onPressed: () {
+                onPressed: () async {
                   if (_goalNameController.text.isNotEmpty &&
                       _amountController.text.isNotEmpty) {
                     double enteredAmount = double.parse(_amountController.text);
@@ -143,7 +169,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                         category: _goalNameController.text,
                         amount: enteredAmount,
                       );
-
+                      await createBudget(newBudget);
                       widget.budgets.add(newBudget);
 
                       // Pass the reduced amount back to HomeScreen

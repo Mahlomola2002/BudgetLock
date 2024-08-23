@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'dart:convert';
 import 'package:budget_lock/screens/Payment.dart';
 import 'package:budget_lock/screens/create_Budget.dart';
@@ -49,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen>
     });
     try {
       final response =
-          await http.get(Uri.parse('http://localhost:8000/budgets/'));
+          await http.get(Uri.parse('http://localhost:8020/budgets/'));
       if (response.statusCode == 200) {
         final List<dynamic> budgetsJson = json.decode(response.body);
         setState(() {
@@ -67,9 +69,21 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
+  void _updateBudget(Budget updatedBudget) {
+    setState(() {
+      int index =
+          _budgets.indexWhere((b) => b.category == updatedBudget.category);
+      if (index != -1) {
+        _budgets[index] = updatedBudget;
+      }
+    });
+    // Optionally, you can update the backend here
+    // _updateBudgetOnBackend(updatedBudget);
+  }
+
   Future<void> _deleteBudget(String category) async {
     final response =
-        await http.delete(Uri.parse('http://localhost:8000/budgets/$category'));
+        await http.delete(Uri.parse('http://localhost:8020/budgets/$category'));
 
     if (response.statusCode == 200) {
       _fetchBudgets();
@@ -116,7 +130,10 @@ class _HomeScreenState extends State<HomeScreen>
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PaymentMethodsPage(),
+            builder: (context) => PaymentMethodsPage(
+              budget: budget,
+              onBudgetUpdated: _updateBudget,
+            ),
           ),
         );
       },
@@ -133,8 +150,6 @@ class _HomeScreenState extends State<HomeScreen>
           children: [
             Row(
               children: [
-                Text(budget.emoji, style: TextStyle(fontSize: 24)),
-                SizedBox(width: 10),
                 Text(budget.category, style: TextStyle(fontSize: 16)),
               ],
             ),

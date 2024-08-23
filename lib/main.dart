@@ -2,10 +2,12 @@
 
 import 'dart:ui';
 import 'package:budget_lock/screens/Reports.dart';
+import 'package:budget_lock/screens/addCustomer.dart';
 import 'package:budget_lock/screens/chatbot.dart';
 import 'package:budget_lock/screens/emailverification.dart';
 import 'package:budget_lock/screens/login_screen.dart';
 import 'package:budget_lock/screens/signup_screen.dart';
+import 'package:budget_lock/screens/transactions.dart';
 import 'package:flutter/material.dart';
 import 'screens/home.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -50,6 +52,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      debugShowCheckedModeBanner: false,
       initialRoute: '/login',
       routes: {
         '/login': (context) => LoginScreen(),
@@ -71,7 +74,7 @@ class _HomeWrapperState extends State<HomeWrapper> {
   int _currentIndex = 0;
   final List<Widget> _children = [
     HomeScreen(),
-    ReportsPage(),
+    AddPartnershipPage(),
     ChatBotScreen(),
   ];
 
@@ -129,8 +132,8 @@ class _HomeWrapperState extends State<HomeWrapper> {
                 text: "Home",
               ),
               GButton(
-                icon: Icons.dashboard,
-                text: "Dashboard",
+                icon: Icons.add_circle,
+                text: "Add customer",
               ),
               GButton(
                 icon: Icons.chat_bubble,

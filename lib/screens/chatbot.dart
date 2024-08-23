@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:file_picker/file_picker.dart';
 
 class ChatBotScreen extends StatefulWidget {
   @override
@@ -22,7 +24,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
 
   void connectWebSocket() {
     channel = WebSocketChannel.connect(
-      Uri.parse('ws://localhost:8000/ws/chat'),
+      Uri.parse('ws://localhost:8020/ws/chat'),
     );
 
     channel.stream.listen((message) {
@@ -49,6 +51,30 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       print('WebSocket connection closed');
     });
   }
+
+  Future<void> _pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result != null) {
+      File file = File(result.files.single.path!);
+      String fileName = result.files.single.name;
+
+      // Here you would typically upload the file to your server
+      // For now, we'll just add a message indicating the file was attached
+      setState(() {
+        _messages.insert(
+            0, ChatMessage(text: "Attached file: $fileName", isUser: true));
+      });
+
+      // TODO: Implement file upload to server
+      // You might want to send the file to your WebSocket server or use a separate API endpoint
+    }
+  }
+
+  // ... rest of the existing code ...
 
   void _handleSubmitted(String text) {
     _textController.clear();
@@ -81,7 +107,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Twinkle Bot', style: TextStyle(fontSize: 16)),
+                Text('BuBo', style: TextStyle(fontSize: 16)),
                 Text('Online',
                     style: TextStyle(fontSize: 12, color: Colors.greenAccent)),
               ],
@@ -123,6 +149,10 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: Row(
         children: [
+          IconButton(
+            icon: Icon(Icons.attach_file, color: Colors.white),
+            onPressed: _pickFile,
+          ),
           Expanded(
             child: TextField(
               controller: _textController,
@@ -144,8 +174,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
           ElevatedButton(
             onPressed: () => _handleSubmitted(_textController.text),
             style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  Colors.purpleAccent, // Updated color to match the theme
+              backgroundColor: Colors.purpleAccent,
               shape: CircleBorder(),
               padding: EdgeInsets.all(12.0),
             ),

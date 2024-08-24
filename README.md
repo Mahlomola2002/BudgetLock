@@ -1,6 +1,6 @@
 # budget_lock
-
-A new Flutter project.
+# Try the app out on the url below:
+[Visit BudgetLockWeb](https://delicia-d.github.io/BudgetLockWeb/)
 
 ## Getting Started
 

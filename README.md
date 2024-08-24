@@ -1,7 +1,8 @@
 # budget_lock
 # Try the app out on the url below:
 [Visit BudgetLockWeb](https://delicia-d.github.io/BudgetLockWeb/)
-
+or copy and paste this url
+https://delicia-d.github.io/BudgetLockWeb/
 ## Getting Started
 
 This project is a starting point for a Flutter application.
